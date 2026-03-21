@@ -1,1 +1,28 @@
-backend
+# CORE BACKEND
+[[_TOC_]]
+
+## kecloak
+
+### Разработка
+
+Для запуска сервиса необходимо указать переменные окружения в файлы **s.db-conf.env** и **s.kc-conf.env** 
+
+#### s.db-conf.env
+
+* POSTGRES_USER=
+* POSTGRES_PASSWORD=
+* POSTGRES_DB=
+
+#### s.kc-conf.env
+
+* KC_DB=
+* KC_DB_URL=
+* KC_DB_USERNAME= // jbdc:....
+* KC_DB_PASSWORD=
+* KC_HOSTNAME=
+* KC_HOSTNAME_PORT=
+* KC_HOSTNAME_STRICT=
+* KC_HTTP_ENABLED=
+* KC_HEALTH_ENABLED=
+* KEYCLOAK_ADMIN=
+* KEYCLOAK_ADMIN_PASSWORD=
