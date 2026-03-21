@@ -1,0 +1,45 @@
+- comment: ""
+  definition:
+    query:
+      collection_name: allowed-queries
+      query_name: people
+  methods:
+    - GET
+  name: people
+  url: people
+- comment: ""
+  definition:
+    query:
+      collection_name: allowed-queries
+      query_name: insert_people_one
+  methods:
+    - POST
+  name: insert_people_one
+  url: people
+- comment: ""
+  definition:
+    query:
+      collection_name: allowed-queries
+      query_name: people_by_pk
+  methods:
+    - GET
+  name: people_by_pk
+  url: people/:id
+- comment: ""
+  definition:
+    query:
+      collection_name: allowed-queries
+      query_name: update_people_by_pk
+  methods:
+    - POST
+  name: update_people_by_pk
+  url: people/:id
+- comment: ""
+  definition:
+    query:
+      collection_name: allowed-queries
+      query_name: delete_people_by_pk
+  methods:
+    - DELETE
+  name: delete_people_by_pk
+  url: people/:id
