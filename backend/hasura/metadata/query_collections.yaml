@@ -1,0 +1,43 @@
+- name: allowed-queries
+  definition:
+    queries:
+      - name: people_by_pk
+        query: |
+          query people_by_pk ($id: Int!) {
+            people_by_pk(id: $id) {
+              id
+              name
+            }
+          }
+      - name: people
+        query: |
+          query people {
+            people {
+              id
+              name
+            }
+          }
+      - name: insert_people_one
+        query: |
+          mutation insert_people_one ($object: people_insert_input!) {
+            insert_people_one(object: $object) {
+              id
+              name
+            }
+          }
+      - name: update_people_by_pk
+        query: |
+          mutation update_people_by_pk ($id: Int!, $object: people_set_input!) {
+            update_people_by_pk(pk_columns: {id:$id}, _set: $object) {
+              id
+              name
+            }
+          }
+      - name: delete_people_by_pk
+        query: |
+          mutation delete_people_by_pk ($id: Int!) {
+            delete_people_by_pk(id: $id) {
+              id
+              name
+            }
+          }
