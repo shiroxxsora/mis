@@ -43,9 +43,11 @@ ml/detection/output/*
 !ml/detection/output/.gitkeep
 ml/binary/output/*
 !ml/binary/output/.gitkeep
+!ml/binary/output/dentalnet.pt
 ml/binary/.env
 __pycache__/
 *.pt
+!ml/binary/output/dentalnet.pt
 
 # Датасет (большой, хранить локально)
 Dental OPG XRAY Dataset/
