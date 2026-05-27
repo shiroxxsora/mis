@@ -1,0 +1,184 @@
+table:
+
+  name: patients
+
+  schema: public
+
+array_relationships:
+
+  - name: appointments
+
+    using:
+
+      foreign_key_constraint_on:
+
+        column: patient_id
+
+        table:
+
+          name: appointments
+
+          schema: public
+
+  - name: images
+
+    using:
+
+      foreign_key_constraint_on:
+
+        column: patient_id
+
+        table:
+
+          name: patient_images
+
+          schema: public
+
+  - name: summaries
+
+    using:
+
+      foreign_key_constraint_on:
+
+        column: patient_id
+
+        table:
+
+          name: patient_summaries
+
+          schema: public
+
+select_permissions:
+
+  - role: user
+
+    permission:
+
+      columns:
+
+        - id
+
+        - last_name
+
+        - first_name
+
+        - middle_name
+
+        - birth_date
+
+        - phone
+
+        - attendance_probability
+
+        - visit_summary
+
+        - created_at
+
+      filter: {}
+
+      allow_aggregations: true
+
+  - role: registrar
+
+    permission:
+
+      columns:
+
+        - id
+
+        - last_name
+
+        - first_name
+
+        - middle_name
+
+        - birth_date
+
+        - phone
+
+        - created_at
+
+      filter: {}
+
+      allow_aggregations: true
+
+insert_permissions:
+
+  - role: user
+
+    permission:
+
+      check: {}
+
+      columns:
+
+        - last_name
+
+        - first_name
+
+        - middle_name
+
+        - birth_date
+
+        - phone
+
+  - role: registrar
+
+    permission:
+
+      check: {}
+
+      columns:
+
+        - last_name
+
+        - first_name
+
+        - middle_name
+
+        - birth_date
+
+        - phone
+
+update_permissions:
+
+  - role: user
+
+    permission:
+
+      columns:
+
+        - last_name
+
+        - first_name
+
+        - middle_name
+
+        - birth_date
+
+        - phone
+
+      filter: {}
+
+      check: {}
+
+  - role: registrar
+
+    permission:
+
+      columns:
+
+        - last_name
+
+        - first_name
+
+        - middle_name
+
+        - birth_date
+
+        - phone
+
+      filter: {}
+
+      check: {}
+

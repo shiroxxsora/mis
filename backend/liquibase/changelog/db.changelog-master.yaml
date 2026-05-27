@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - include:
+      file: ../schemas/public/changelog.yaml
+      relativeToChangelogFile: true
+  # Добавляйте новые схемы отдельным include:
+  # - include:
+  #     file: ../schemas/audit/changelog.yaml
+  #     relativeToChangelogFile: true

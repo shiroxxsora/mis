@@ -1,0 +1,20 @@
+-- Поле «кассир» во всех шаблонах типа receipt заполняется из JWT на клиенте.
+
+UPDATE public.document_templates
+SET attributes = (
+    SELECT jsonb_agg(
+        CASE
+            WHEN elem->>'key' = 'cashier_name'
+            THEN elem || '{"readonly": true, "source": "token"}'::jsonb
+            ELSE elem
+        END
+        ORDER BY ordinality
+    )
+    FROM jsonb_array_elements(attributes) WITH ORDINALITY AS t(elem, ordinality)
+)
+WHERE document_type = 'receipt'
+  AND EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(attributes) AS elem
+    WHERE elem->>'key' = 'cashier_name'
+);

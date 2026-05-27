@@ -1,0 +1,64 @@
+table:
+  name: appointments
+  schema: public
+
+object_relationships:
+  - name: patient
+    using:
+      foreign_key_constraint_on: patient_id
+
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - patient_id
+        - scheduled_at
+        - duration_minutes
+        - status
+        - complaints
+        - treatment_done
+        - notes
+        - created_at
+      filter: {}
+      allow_aggregations: true
+  - role: registrar
+    permission:
+      columns:
+        - id
+        - patient_id
+        - scheduled_at
+        - duration_minutes
+        - status
+        - notes
+        - created_at
+      filter: {}
+      allow_aggregations: true
+
+insert_permissions:
+  - role: user
+    permission:
+      check:
+        status:
+          _eq: scheduled
+      columns:
+        - patient_id
+        - scheduled_at
+        - duration_minutes
+        - notes
+      set:
+        status: scheduled
+        treatment_done: false
+  - role: registrar
+    permission:
+      check:
+        status:
+          _eq: scheduled
+      columns:
+        - patient_id
+        - scheduled_at
+        - duration_minutes
+        - notes
+      set:
+        status: scheduled
+        treatment_done: false

@@ -1,0 +1,18 @@
+table:
+  name: patient_summaries
+  schema: public
+object_relationships:
+  - name: patient
+    using:
+      foreign_key_constraint_on: patient_id
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - patient_id
+        - summary
+        - created_at
+        - updated_at
+      filter: {}
+      allow_aggregations: true

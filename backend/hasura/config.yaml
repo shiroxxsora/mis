@@ -1,5 +1,12 @@
 version: 3
-endpoint: http://localhost:8080
+# Hasura Engine не проброшен на хост — только Docker-сеть.
+# Metadata применяется автоматически через volume в hasura-graphql-engine (cli-migrations-v3).
+# Для hasura CLI/console подключите CLI к сети compose, например:
+#   docker run --rm -it --network mis_default \
+#     -v "${PWD}/backend/hasura:/hasura" \
+#     -w /hasura hasura/graphql-engine:v2.48.13.cli-migrations-v3 \
+#     hasura-cli console --endpoint http://hasura-graphql-engine:8080
+endpoint: http://hasura-graphql-engine:8080
 admin_secret: myadminsecretkey
 metadata_directory: metadata
 actions:

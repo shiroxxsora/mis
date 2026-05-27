@@ -1,0 +1,504 @@
+# Единый стек MIS: инфраструктура + приложения
+
+# Запуск: cp .env.example .env && docker compose up -d --build
+
+
+
+services:
+
+  keycloak-db:
+
+    image: postgres:18-alpine
+
+    container_name: keycloak-db
+
+    env_file:
+
+      - ./backend/keycloak/s.db-conf.env
+
+    ports:
+
+      - "127.0.0.1:5433:5432"
+
+    volumes:
+
+      - keycloak_db_data:/var/lib/postgresql/data
+
+    restart: unless-stopped
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+
+
+  keycloak:
+
+    image: quay.io/keycloak/keycloak:24.0
+
+    container_name: keycloak
+
+    command: start-dev --import-realm
+
+    ports:
+
+      - "8180:8080"
+
+    env_file:
+
+      - ./backend/keycloak/s.kc-conf.env
+
+    environment:
+
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-changeme}
+
+    volumes:
+
+      - ./backend/keycloak/realm-export:/opt/keycloak/data/import
+
+      - ./backend/keycloak/themes/mis:/opt/keycloak/themes/mis
+
+    depends_on:
+
+      keycloak-db:
+
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\" >&3 && grep -q UP <&3' || exit 1"]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 10
+
+      start_period: 60s
+
+
+
+  app-db:
+
+    build:
+
+      context: ./backend/app-db
+
+      dockerfile: Dockerfile
+
+    container_name: app-db
+
+    ports:
+
+      - "127.0.0.1:5435:5432"
+
+    volumes:
+
+      - app_db_data:/var/lib/postgresql
+
+      - ./backend/liquibase:/liquibase/workspace:ro
+
+    env_file:
+
+      - ./backend/s.app-db-conf.env
+
+    restart: unless-stopped
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB && test -f /var/lib/postgresql/18/docker/.liquibase-ready"]
+
+      interval: 5s
+
+      timeout: 5s
+
+      retries: 12
+
+      start_period: 40s
+
+
+
+  hasura-db:
+
+    image: postgres:18-alpine
+
+    container_name: hasura-db
+
+    ports:
+
+      - "127.0.0.1:5434:5432"
+
+    volumes:
+
+      - hasura_db_data:/var/lib/postgresql
+
+    env_file:
+
+      - ./backend/s.hasura-conf.env
+
+    restart: unless-stopped
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+
+
+  hasura-data-connector-agent:
+
+    image: hasura/graphql-data-connector:v2.48.13
+
+    container_name: hasura-data-connector-agent
+
+    restart: always
+
+    expose:
+
+      - "8081"
+
+    env_file:
+
+      - ./backend/s.app-db-conf.env
+
+    healthcheck:
+
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/v1/athena/health"]
+
+      interval: 5s
+
+      timeout: 10s
+
+      retries: 5
+
+      start_period: 5s
+
+
+
+  hasura-graphql-engine:
+
+    image: hasura/graphql-engine:v2.48.13.cli-migrations-v3
+
+    container_name: hasura-graphql-engine
+
+    expose:
+
+      - "8080"
+
+    env_file:
+
+      - ./backend/s.hasura-conf.env
+
+    environment:
+
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_ADMIN_SECRET:?задайте HASURA_ADMIN_SECRET в .env}
+
+      HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET:?задайте HASURA_GRAPHQL_JWT_SECRET в .env — см. .env.example}
+
+      HASURA_GRAPHQL_DEV_MODE: ${HASURA_GRAPHQL_DEV_MODE:-true}
+
+    depends_on:
+
+      hasura-data-connector-agent:
+
+        condition: service_healthy
+
+      app-db:
+
+        condition: service_healthy
+
+      hasura-db:
+
+        condition: service_healthy
+
+      keycloak:
+
+        condition: service_healthy
+
+    volumes:
+
+      - ./backend/hasura/metadata:/hasura-metadata
+
+
+
+  recognition-service:
+
+    build:
+
+      context: .
+
+      dockerfile: backend/recognition-service/Dockerfile
+
+    container_name: recognition-service
+
+    expose:
+
+      - "8083"
+
+    environment:
+
+      OUTPUT_DIR: /models
+
+      CHECKPOINT: dentalnet.pt
+
+      DEVICE: cpu
+
+      EXPLAIN_ON_INFERENCE: ${EXPLAIN_ON_INFERENCE:-true}
+
+      LIME_NUM_SAMPLES: ${LIME_NUM_SAMPLES:-150}
+
+      LIME_NUM_FEATURES: ${LIME_NUM_FEATURES:-8}
+
+      SHAP_BACKGROUND: ${SHAP_BACKGROUND:-8}
+
+    volumes:
+
+      - ./ml/binary/output:/models:ro
+
+    restart: unless-stopped
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8083/actuator/health || exit 1"]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+      start_period: 30s
+
+
+
+  minio:
+
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+
+    container_name: minio
+
+    command: server /data --console-address ":9001"
+
+    ports:
+
+      - "127.0.0.1:9000:9000"
+
+      - "127.0.0.1:9001:9001"
+
+    environment:
+
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+
+    volumes:
+
+      - minio_data:/data
+
+    restart: unless-stopped
+
+    healthcheck:
+
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+      start_period: 10s
+
+
+
+  service-logic:
+
+    build:
+
+      context: ./backend/service-logic
+
+      dockerfile: Dockerfile
+
+    container_name: service-logic
+
+    expose:
+
+      - "8082"
+
+    environment:
+
+      RECOGNITION_SERVICE_URL: http://recognition-service:8083
+
+      SERVER_PORT: "8082"
+
+      HASURA_URL: http://hasura-graphql-engine:8080
+
+      HASURA_ADMIN_SECRET: ${HASURA_ADMIN_SECRET:?задайте HASURA_ADMIN_SECRET в .env}
+
+      LLM_API_URL: ${LLM_API_URL:-http://host.docker.internal:1234/api/v1/chat}
+
+      LLM_MODEL: ${LLM_MODEL:-qwen/qwen3.5-9b}
+
+      LLM_ATTENDANCE_SYSTEM_PROMPT: ${LLM_ATTENDANCE_SYSTEM_PROMPT:-Ты аналитик стоматологической клиники. По истории записей пациента оцени вероятность его явки на следующий приём. Учитывай количество явок, пропусков и отмен. Ответь только целым числом от 0 до 100 — процент вероятности явки, без пояснений.}
+
+      LLM_CONNECT_TIMEOUT_SECONDS: ${LLM_CONNECT_TIMEOUT_SECONDS:-30}
+
+      LLM_READ_TIMEOUT_SECONDS: ${LLM_READ_TIMEOUT_SECONDS:-600}
+
+      MINIO_ENDPOINT: http://minio:9000
+
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+
+      MINIO_BUCKET: ${MINIO_BUCKET:-mis-patient-images}
+
+    depends_on:
+
+      recognition-service:
+
+        condition: service_healthy
+
+      minio:
+
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8082/actuator/health || exit 1"]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+      start_period: 30s
+
+
+
+  api-gateway:
+
+    build:
+
+      context: ./backend/api-gateway
+
+      dockerfile: Dockerfile
+
+    container_name: api-gateway
+
+    ports:
+
+      - "8084:8084"
+
+    environment:
+
+      SERVER_PORT: "8084"
+
+      SERVICE_LOGIC_URL: http://service-logic:8082
+
+      HASURA_URL: http://hasura-graphql-engine:8080
+
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI:-http://localhost:8180/realms/mis}
+
+      KEYCLOAK_JWK_SET_URI: ${KEYCLOAK_JWK_SET_URI:-http://keycloak:8080/realms/mis/protocol/openid-connect/certs}
+
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-mis-frontend}
+
+      CORS_ALLOWED_ORIGIN_PATTERNS: ${CORS_ALLOWED_ORIGIN_PATTERNS:-http://localhost:3000,http://localhost:5173}
+
+    depends_on:
+
+      keycloak:
+
+        condition: service_healthy
+
+      hasura-graphql-engine:
+
+        condition: service_started
+
+      service-logic:
+
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8084/actuator/health || exit 1"]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+      start_period: 40s
+
+
+
+  frontend:
+
+    build:
+
+      context: ./frontend
+
+      dockerfile: Dockerfile
+
+      args:
+
+        NPM_REGISTRY: ${NPM_REGISTRY:-}
+
+        VITE_KEYCLOAK_URL: http://localhost:8180
+
+        VITE_KEYCLOAK_REALM: mis
+
+        VITE_KEYCLOAK_CLIENT_ID: mis-frontend
+
+    container_name: mis-frontend
+
+    ports:
+
+      - "3000:80"
+
+    depends_on:
+
+      api-gateway:
+
+        condition: service_healthy
+
+      keycloak:
+
+        condition: service_healthy
+
+    restart: unless-stopped
+
+
+
+volumes:
+
+  keycloak_db_data:
+
+  app_db_data:
+
+  hasura_db_data:
+
+  minio_data:
+

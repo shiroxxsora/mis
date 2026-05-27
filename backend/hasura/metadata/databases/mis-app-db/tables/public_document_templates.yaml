@@ -1,0 +1,42 @@
+table:
+  name: document_templates
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - code
+        - name
+        - document_type
+        - target
+        - attributes
+        - template
+        - is_active
+        - created_at
+      filter:
+        _and:
+          - is_active:
+              _eq: true
+          - document_type:
+              _neq: receipt
+      allow_aggregations: true
+  - role: registrar
+    permission:
+      columns:
+        - id
+        - code
+        - name
+        - document_type
+        - target
+        - attributes
+        - template
+        - is_active
+        - created_at
+      filter:
+        _and:
+          - is_active:
+              _eq: true
+          - document_type:
+              _eq: receipt
+      allow_aggregations: true

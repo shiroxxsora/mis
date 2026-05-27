@@ -25,3 +25,27 @@ replay_pid*
 
 # Enveronmental files
 .idea/*
+.env
+*.env.local
+
+# Node
+node_modules/
+frontend/dist/
+
+# Java
+target/
+
+# ML
+ml/training/output/*
+!ml/training/output/.gitkeep
+ml/training/.venv/
+ml/detection/output/*
+!ml/detection/output/.gitkeep
+ml/binary/output/*
+!ml/binary/output/.gitkeep
+ml/binary/.env
+__pycache__/
+*.pt
+
+# Датасет (большой, хранить локально)
+Dental OPG XRAY Dataset/

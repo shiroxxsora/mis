@@ -6,6 +6,12 @@
     
 ## kecloak
 
+При `docker compose up` realm **`mis`** импортируется из `keycloak/realm-export/mis-realm.json` (только при первом старте БД).
+
+- Клиент SPA: **`mis-frontend`** (PKCE, public)
+- Демо-пользователь: `sh scripts/keycloak-create-demo-user.sh` (пароли в `.env`, не в realm export)
+- Секреты Keycloak/Hasura: корневой **`.env`** (см. `.env.example`)
+
 ### Разработка
 
 Для запуска сервиса необходимо указать переменные окружения в файлы **s.db-conf.env** и **s.kc-conf.env** 
@@ -50,4 +56,10 @@ HASURA_GRAPHQL_ADMIN_SECRET=
 
 QUARKUS_LOG_LEVEL=
 QUARKUS_OPENTELEMETRY_ENABLED=
+
+## liquibase (app-db)
+
+SQL-миграции схемы приложения: [liquibase/README.md](liquibase/README.md).
+
+При `docker compose up` контейнер `app-db` сам выполняет `liquibase update` после старта PostgreSQL (см. `app-db/docker-entrypoint-wrap.sh`).
 

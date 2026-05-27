@@ -1,0 +1,35 @@
+table:
+  name: referral_clinics
+  schema: public
+object_relationships:
+  - name: direction
+    using:
+      foreign_key_constraint_on: direction_id
+array_relationships:
+  - name: specialists
+    using:
+      foreign_key_constraint_on:
+        column: clinic_id
+        table:
+          name: referral_specialists
+          schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - direction_id
+        - code
+        - name
+        - address
+        - phone
+        - is_active
+        - created_at
+      filter:
+        _and:
+          - is_active:
+              _eq: true
+          - direction:
+              is_active:
+                _eq: true
+      allow_aggregations: true

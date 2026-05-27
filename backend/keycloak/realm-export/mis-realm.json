@@ -1,0 +1,56 @@
+{
+  "realm": "mis",
+  "enabled": true,
+  "displayName": "MIS",
+  "displayNameHtml": "<span class=\"mis-kc-brand-subtitle\">Медицинская информационная система</span>",
+  "loginTheme": "mis",
+  "accountTheme": "mis",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["ru", "en"],
+  "defaultLocale": "ru",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Врач — приём, направления, без чеков"
+      },
+      {
+        "name": "registrar",
+        "description": "Регистратура — запись на приём, чеки, без приёма"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "mis-frontend",
+      "name": "MIS Frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "rootUrl": "http://localhost:3000",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:5173"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*##http://localhost:5173/*"
+      },
+      "protocol": "openid-connect"
+    }
+  ]
+}

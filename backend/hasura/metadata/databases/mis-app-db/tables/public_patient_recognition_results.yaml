@@ -1,0 +1,28 @@
+table:
+  name: patient_recognition_results
+  schema: public
+object_relationships:
+  - name: patient
+    using:
+      foreign_key_constraint_on: patient_id
+  - name: image
+    using:
+      foreign_key_constraint_on: patient_image_id
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - patient_id
+        - patient_image_id
+        - status
+        - message
+        - job_id
+        - label
+        - confidence
+        - prob_healthy
+        - shap_image_base64
+        - lime_image_base64
+        - created_at
+      filter: {}
+      allow_aggregations: true

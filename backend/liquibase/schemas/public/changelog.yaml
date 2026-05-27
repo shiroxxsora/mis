@@ -1,0 +1,195 @@
+databaseChangeLog:
+  - changeSet:
+      id: public-001-create-people
+      author: mis
+      labels: schema:public
+      comment: Таблица people (legacy / демо)
+      changes:
+        - sqlFile:
+            path: sql/001_create_people.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-002-create-patients-and-appointments
+      author: mis
+      labels: schema:public
+      comment: Пациенты и записи на приём
+      changes:
+        - sqlFile:
+            path: sql/002_create_patients_and_appointments.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-003-create-patient-images
+      author: mis
+      labels: schema:public
+      comment: Снимки пациентов (OPG, кропы зубов и т.д.)
+      changes:
+        - sqlFile:
+            path: sql/003_create_patient_images.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-004-extend-appointments-for-visit-processing
+      author: mis
+      labels: schema:public
+      comment: Статусы явки, жалобы и признак лечения для приёма
+      changes:
+        - sqlFile:
+            path: sql/004_extend_appointments_for_visit_processing.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-005-patient-cards-and-summaries
+      author: mis
+      labels: schema:public
+      comment: Вероятность явки, суммаризация и история суммаризаций пациента
+      changes:
+        - sqlFile:
+            path: sql/005_patient_cards_and_summaries.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-006-document-templates
+      author: mis
+      labels: schema:public
+      comment: Шаблоны документов для печати (направления, чек)
+      validCheckSum:
+        - 9:44df6b3c32dd94d8cd6f22dcdf6c2b42
+        - 9:a62218670537d5e2e9c77e370d0433b7
+      changes:
+        - sqlFile:
+            path: sql/006_document_templates.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-007-seed-demo-patients-and-appointments
+      author: mis
+      labels: schema:public,seed:demo
+      comment: Демо-пациенты и история приемов для тестирования суммаризации
+      changes:
+        - sqlFile:
+            path: sql/007_seed_demo_patients_and_appointments.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-008-create-referral-reference
+      author: mis
+      labels: schema:public
+      comment: Справочники направлений, клиник и специалистов для направлений
+      changes:
+        - sqlFile:
+            path: sql/008_create_referral_reference.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-009-seed-referral-clinics-and-specialists
+      author: mis
+      labels: schema:public,seed:demo
+      comment: Тестовые клиники и специалисты по направлениям
+      changes:
+        - sqlFile:
+            path: sql/009_seed_referral_clinics_and_specialists.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-010-document-doctor-name-from-token
+      author: mis
+      labels: schema:public
+      comment: Поле doctor_name в шаблонах документов только из JWT
+      changes:
+        - sqlFile:
+            path: sql/010_document_doctor_name_from_token.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-011-document-referral-attributes
+      author: mis
+      labels: schema:public
+      comment: Поля клиники и специалиста в шаблонах — из справочников
+      changes:
+        - sqlFile:
+            path: sql/011_document_referral_attributes.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-012-referral-seed-upsert
+      author: mis
+      labels: schema:public,seed:demo
+      comment: Идемпотентное обновление справочников направлений
+      changes:
+        - sqlFile:
+            path: sql/012_referral_seed_upsert.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-013-referral-clinic-code-per-direction
+      author: mis
+      labels: schema:public
+      comment: Уникальность code клиники в рамках направления
+      changes:
+        - sqlFile:
+            path: sql/013_referral_clinic_code_per_direction.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-014-document-cashier-name-from-token
+      author: mis
+      labels: schema:public
+      comment: Поле cashier_name в чеке только из JWT
+      changes:
+        - sqlFile:
+            path: sql/014_document_cashier_name_from_token.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-015-document-cashier-name-all-receipts
+      author: mis
+      labels: schema:public
+      comment: cashier_name из JWT для всех шаблонов document_type=receipt
+      changes:
+        - sqlFile:
+            path: sql/015_document_cashier_name_all_receipts.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
+
+  - changeSet:
+      id: public-016-patient-recognition-results
+      author: mis
+      labels: schema:public
+      comment: Результаты распознавания снимков, привязанные к пациенту
+      changes:
+        - sqlFile:
+            path: sql/016_create_patient_recognition_results.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: false
