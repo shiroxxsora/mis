@@ -1,0 +1,12 @@
+# GPU-оверлей
+# Запуск: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+
+services:
+  opg-yolo-train:
+    build:
+      dockerfile: Dockerfile.gpu
+    environment:
+      DEVICE: "0"
+      WORKERS: ${WORKERS:-8}
+      BATCH_SIZE: ${BATCH_SIZE:-16}
+    gpus: all

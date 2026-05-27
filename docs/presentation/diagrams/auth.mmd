@@ -1,0 +1,17 @@
+sequenceDiagram
+  participant B as Браузер
+  participant FE as frontend
+  participant KC as Keycloak
+  participant GW as api-gateway
+  participant SL as service-logic
+  participant H as Hasura
+
+  B->>KC: OIDC PKCE
+  KC-->>B: JWT
+  B->>FE: UI
+  FE->>GW: REST /api + Bearer
+  GW->>KC: JWK verify
+  GW->>SL: proxy
+  SL->>H: admin GraphQL
+  FE->>GW: GraphQL + JWT
+  GW->>H: /v1/graphql

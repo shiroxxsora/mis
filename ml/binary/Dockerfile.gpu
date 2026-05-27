@@ -1,0 +1,19 @@
+FROM pytorch/pytorch:2.2.2-cuda12.1-cudnn8-runtime
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir \
+    albumentations==1.4.3 \
+    opencv-python-headless==4.9.0.80 \
+    Pillow==10.3.0 \
+    numpy==1.26.4 \
+    pandas==2.2.1 \
+    scikit-learn==1.4.2 \
+    matplotlib==3.8.4 \
+    shap==0.45.1 \
+    lime==0.2.0.1
+
+COPY src/ ./
+
+CMD ["python", "pipeline.py"]

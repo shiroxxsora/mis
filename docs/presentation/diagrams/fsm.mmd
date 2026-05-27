@@ -1,0 +1,13 @@
+stateDiagram-v2
+  [*] --> scheduled: GraphQL insert
+  scheduled --> arrived
+  scheduled --> no_show
+  scheduled --> cancelled
+  arrived --> completed
+  arrived --> no_show
+  arrived --> cancelled
+  no_show --> arrived
+  no_show --> completed
+  no_show --> cancelled
+  completed --> [*]
+  cancelled --> [*]

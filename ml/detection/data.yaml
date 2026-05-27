@@ -1,0 +1,18 @@
+path: /data/dataset
+
+train: train/images
+val:   valid/images
+test:  test/images
+
+nc: 6
+
+# Имена классов — уточните по документации к датасету
+# Судя по количеству боксов (class 5: 3293, class 0: 853, class 2: 729, ...)
+# предположительный порядок, совпадающий с Classification-датасетом
+names:
+  0: BDC-BDR
+  1: Caries
+  2: Fractured-Teeth
+  3: Healthy-Teeth
+  4: Impacted-Teeth
+  5: Infection

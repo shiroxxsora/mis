@@ -1,0 +1,13 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#ffe1d7",
+    "primaryTextColor": "#111111",
+    "primaryBorderColor": "#ff4b23",
+    "secondaryColor": "#eef0f3",
+    "tertiaryColor": "#ffffff",
+    "lineColor": "#2a2a2e",
+    "fontFamily": "Segoe UI, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}

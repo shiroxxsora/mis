@@ -1,0 +1,22 @@
+# Оверлей для обучения на GPU (NVIDIA)
+# Запуск: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+
+services:
+  opg-cnn-train:
+    build:
+      dockerfile: Dockerfile.gpu
+    environment:
+      DEVICE: cuda
+      NVIDIA_VISIBLE_DEVICES: all
+      RUN_EXPLAIN: ${RUN_EXPLAIN:-true}
+      EXPLAIN_SAMPLES: ${EXPLAIN_SAMPLES:-3}
+      LIME_NUM_SAMPLES: ${LIME_NUM_SAMPLES:-300}
+      LIME_NUM_FEATURES: ${LIME_NUM_FEATURES:-12}
+      SHAP_BACKGROUND: ${SHAP_BACKGROUND:-8}
+    gpus: all
+
+  opg-cnn-explain:
+    environment:
+      DEVICE: cuda
+      NVIDIA_VISIBLE_DEVICES: all
+    gpus: all

@@ -1,0 +1,15 @@
+sequenceDiagram
+  participant FE as frontend
+  participant GW as api-gateway
+  participant SL as service-logic
+  participant M as MinIO
+  participant H as Hasura
+
+  FE->>GW: POST image
+  GW->>SL: proxy JWT
+  SL->>M: PutObject
+  SL->>H: metadata
+  FE->>GW: GET file
+  GW->>SL: proxy
+  SL->>M: GetObject
+  SL-->>FE: stream

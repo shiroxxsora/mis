@@ -1,0 +1,23 @@
+flowchart TB
+  subgraph doctor["Врач user"]
+    D1[Пациенты]
+    D2[Приёмы]
+    D3[Приём FSM]
+    D4[DentalNet]
+    D5[LLM]
+    D6[Направления]
+  end
+
+  subgraph reg["Регистратура"]
+    R1[Пациенты]
+    R2[Приёмы]
+    R3[Чеки]
+  end
+
+  S1[OIDC Keycloak] --> D1
+  S1 --> R1
+  D2 --> D3
+  D3 --> D4
+  D3 --> D5
+  D3 --> D6
+  R2 --> R3

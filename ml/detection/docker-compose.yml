@@ -1,0 +1,49 @@
+# YOLOv8 детекция — отдельный стек
+# CPU: docker compose up --build
+# GPU: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+
+services:
+  opg-yolo-train:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mis-opg-yolo:latest
+    environment:
+      DATA_YAML: /data/dataset/data.yaml
+      OUTPUT_DIR: /data/output
+      MODEL_NAME: ${MODEL_NAME:-yolov8m.pt}
+      EPOCHS: ${EPOCHS:-100}
+      IMAGE_SIZE: ${IMAGE_SIZE:-640}
+      BATCH_SIZE: ${BATCH_SIZE:-8}
+      PATIENCE: ${PATIENCE:-20}
+      LR0: ${LR0:-0.003}
+      LRF: ${LRF:-0.01}
+      MOSAIC: ${MOSAIC:-0.5}
+      DEGREES: ${DEGREES:-5}
+      TRANSLATE: ${TRANSLATE:-0.05}
+      SCALE: ${SCALE:-0.3}
+      FLIPLR: ${FLIPLR:-0.5}
+      FLIPUD: ${FLIPUD:-0}
+      HSV_V: ${HSV_V:-0.3}
+      HSV_S: ${HSV_S:-0}
+      HSV_H: ${HSV_H:-0}
+      WORKERS: ${WORKERS:-4}
+      WEIGHT_DECAY: ${WEIGHT_DECAY:-0.0005}
+      INFER_CONF: ${INFER_CONF:-0.25}
+      RUN_INFER_SAMPLES: ${RUN_INFER_SAMPLES:-true}
+      RUN_EXPLAIN: ${RUN_EXPLAIN:-true}
+      EXPLAIN_SAMPLES: ${EXPLAIN_SAMPLES:-6}
+      PROJECT_NAME: opg_detection
+      RUN_NAME: yolov8
+    volumes:
+      - type: bind
+        source: ${DATASET_PATH:-../../Dental OPG XRAY Dataset/Dental OPG (Object Detection)/Augmented Dataset}
+        target: /data/dataset
+        read_only: true
+      - type: bind
+        source: ${OUTPUT_PATH:-./output}
+        target: /data/output
+      # data.yaml монтируем поверх — датасет path задан как /data/dataset
+      - type: bind
+        source: ./data.yaml
+        target: /data/dataset/data.yaml

@@ -1,0 +1,38 @@
+flowchart TB
+  subgraph host["Хост"]
+    Browser["Браузер"]
+    LLM["LLM API :1234"]
+  end
+
+  subgraph published["Публичные порты"]
+    FE["frontend :3000"]
+    GW["api-gateway :8084"]
+    KC["Keycloak :8180"]
+    HAS["Hasura :8080"]
+    MINIO_H["MinIO :9000 / :9001"]
+  end
+
+  subgraph docker["Docker network"]
+    SL["service-logic :8082"]
+    RS["recognition :8083"]
+    MINIO["minio :9000"]
+    ADB["app-db :5432"]
+    HDB["hasura-db"]
+    KCDB["keycloak-db"]
+  end
+
+  Browser --> FE
+  Browser --> KC
+  FE --> GW
+  GW --> KC
+  GW --> SL
+  GW --> HAS
+  SL --> HAS
+  SL --> MINIO
+  SL --> RS
+  SL --> LLM
+  MINIO_H -.-> MINIO
+  HAS --> ADB
+  HAS --> HDB
+  HAS --> KC
+  KC --> KCDB

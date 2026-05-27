@@ -1,0 +1,48 @@
+services:
+  dental-binary:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "${DATASET_DIR}:/data/dataset:ro"
+      - "${OUTPUT_DIR:-./output}:/data/output"
+    environment:
+      DATASET_DIR: /data/dataset
+      OUTPUT_DIR: /data/output
+      SKIP_CROP: ${SKIP_CROP:-false}
+      MIN_CROP_SIZE: ${MIN_CROP_SIZE:-10}
+      UNHEALTHY_CLASSES: ${UNHEALTHY_CLASSES:-2,4}
+      HEALTHY_CLASSES: ${HEALTHY_CLASSES:-5}
+      FILTERS: ${FILTERS:-16,32,64,128}
+      FC_UNITS: ${FC_UNITS:-128}
+      DROPOUT: ${DROPOUT:-0.5}
+      LEARNING_RATE: ${LEARNING_RATE:-5e-4}
+      USE_ATTENTION: ${USE_ATTENTION:-true}
+      USE_SCHEDULER: ${USE_SCHEDULER:-true}
+      IMG_SIZE: ${IMG_SIZE:-128}
+      EPOCHS: ${EPOCHS:-50}
+      BATCH_SIZE: ${BATCH_SIZE:-32}
+      DROPOUT_SWEEP: ${DROPOUT_SWEEP:-false}
+      VAL_SPLIT: ${VAL_SPLIT:-0.2}
+      SEED: ${SEED:-42}
+      DEVICE: ${DEVICE:-cpu}
+
+  dental-binary-explain:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python explain.py
+    volumes:
+      - "${DATASET_DIR}:/data/dataset:ro"
+      - "${OUTPUT_DIR:-./output}:/data/output"
+    environment:
+      OUTPUT_DIR: /data/output
+      CSV_PATH: ${CSV_PATH:-/data/output/dataset.csv}
+      CHECKPOINT: ${CHECKPOINT:-dentalnet.pt}
+      EXPLAIN_SAMPLES: ${EXPLAIN_SAMPLES:-6}
+      SHAP_BACKGROUND: ${SHAP_BACKGROUND:-32}
+      LIME_NUM_SAMPLES: ${LIME_NUM_SAMPLES:-500}
+      LIME_NUM_FEATURES: ${LIME_NUM_FEATURES:-8}
+      IMG_SIZE: ${IMG_SIZE:-128}
+      SEED: ${SEED:-42}
+      DEVICE: ${DEVICE:-cpu}

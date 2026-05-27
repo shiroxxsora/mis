@@ -1,0 +1,123 @@
+# Отдельный стек обучения (не связан с корневым docker-compose.yml)
+# CPU:  cd ml && docker compose up --build
+# GPU:  cd ml && docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+
+services:
+  # ── Объяснимость (SHAP + LIME) — запускается отдельно ────────────────────
+  # CPU:  docker compose run --rm opg-cnn-explain
+  # GPU:  docker compose -f docker-compose.yml -f docker-compose.gpu.yml run --rm opg-cnn-explain
+  opg-cnn-explain:
+    image: mis-opg-cnn-train:latest
+    command: python explain.py
+    environment:
+      DATA_DIR: /data/dataset
+      OUTPUT_DIR: /data/output
+      EXPLAIN_CHECKPOINT: ${EXPLAIN_CHECKPOINT:-best_mt_model.pt}
+      EXPLAIN_SAMPLES: ${EXPLAIN_SAMPLES:-6}
+      LIME_NUM_SAMPLES: ${LIME_NUM_SAMPLES:-300}
+      LIME_NUM_FEATURES: ${LIME_NUM_FEATURES:-10}
+      SHAP_BACKGROUND: ${SHAP_BACKGROUND:-16}
+      IMAGE_SIZE: ${IMAGE_SIZE:-288}
+      VAL_RATIO: ${VAL_RATIO:-0.2}
+      SEED: ${SEED:-42}
+      NUM_WORKERS: ${NUM_WORKERS:-0}
+    volumes:
+      - type: bind
+        source: ${DATASET_PATH:-../Dental OPG XRAY Dataset/Dental OPG (Classification)}
+        target: /data/dataset
+        read_only: true
+      - type: bind
+        source: ${OUTPUT_PATH:-./training/output}
+        target: /data/output
+    profiles:
+      - explain
+
+  opg-cnn-train:
+    build:
+      context: ./training
+      dockerfile: Dockerfile
+    image: mis-opg-cnn-train:latest
+    environment:
+      DATA_DIR: /data/dataset
+      OUTPUT_DIR: /data/output
+      # Модель
+      MODEL_BACKBONE: ${MODEL_BACKBONE:-efficientnet_b0}
+      PRETRAINED: ${PRETRAINED:-true}
+      # Обучение
+      EPOCHS: ${EPOCHS:-120}
+      BATCH_SIZE: ${BATCH_SIZE:-16}
+      IMAGE_SIZE: ${IMAGE_SIZE:-288}
+      LEARNING_RATE: ${LEARNING_RATE:-0.0003}
+      BACKBONE_LR_RATIO: ${BACKBONE_LR_RATIO:-0.1}
+      FINETUNE_LR_FACTOR: ${FINETUNE_LR_FACTOR:-0.3}
+      WEIGHT_DECAY: ${WEIGHT_DECAY:-0.001}
+      # Фаза 1
+      FREEZE_ENCODER_EPOCHS: ${FREEZE_ENCODER_EPOCHS:-20}
+      WARMUP_EPOCHS: ${WARMUP_EPOCHS:-5}
+      # Mixup / CutMix
+      MIXUP_ALPHA: ${MIXUP_ALPHA:-0.3}
+      USE_CUTMIX: ${USE_CUTMIX:-true}
+      # Loss
+      LABEL_SMOOTHING: ${LABEL_SMOOTHING:-0.1}
+      LOSS_TYPE: ${LOSS_TYPE:-cross_entropy}
+      FOCAL_GAMMA: ${FOCAL_GAMMA:-2.0}
+      GRAD_CLIP_NORM: ${GRAD_CLIP_NORM:-1.0}
+      # Баланс классов
+      USE_CLASS_WEIGHTS: ${USE_CLASS_WEIGHTS:-true}
+      USE_WEIGHTED_SAMPLER: ${USE_WEIGHTED_SAMPLER:-false}
+      CLASS_WEIGHT_POWER: ${CLASS_WEIGHT_POWER:-0.5}
+      CLASS_WEIGHT_MAX_RATIO: ${CLASS_WEIGHT_MAX_RATIO:-4}
+      # SWA
+      USE_SWA: ${USE_SWA:-true}
+      SWA_START_EPOCH: ${SWA_START_EPOCH:-0}
+      SWA_LR: ${SWA_LR:-0.0001}
+      # TTA
+      USE_TTA: ${USE_TTA:-true}
+      # Early stopping
+      EARLY_STOP_PATIENCE: ${EARLY_STOP_PATIENCE:-20}
+      EARLY_STOP_MIN_DELTA: ${EARLY_STOP_MIN_DELTA:-0.005}
+      # Данные
+      VAL_RATIO: ${VAL_RATIO:-0.2}
+      NUM_WORKERS: ${NUM_WORKERS:-0}
+      SEED: ${SEED:-42}
+      # Аугментация
+      AUGMENT_ENABLED: ${AUGMENT_ENABLED:-true}
+      AUGMENT_ROTATION: ${AUGMENT_ROTATION:-8}
+      AUGMENT_HFLIP: ${AUGMENT_HFLIP:-0.5}
+      AUGMENT_BRIGHTNESS: ${AUGMENT_BRIGHTNESS:-0.15}
+      AUGMENT_CONTRAST: ${AUGMENT_CONTRAST:-0.2}
+      AUGMENT_BLUR_P: ${AUGMENT_BLUR_P:-0.15}
+      AUGMENT_RANDOM_ERASING: ${AUGMENT_RANDOM_ERASING:-false}
+      AUGMENT_EQUALIZE_P: ${AUGMENT_EQUALIZE_P:-0.3}
+      AUGMENT_AUTOCONTRAST_P: ${AUGMENT_AUTOCONTRAST_P:-0.2}
+      AUGMENT_GAMMA_P: ${AUGMENT_GAMMA_P:-0.4}
+      AUGMENT_NOISE_P: ${AUGMENT_NOISE_P:-0.3}
+      AUGMENT_NOISE_STD: ${AUGMENT_NOISE_STD:-0.02}
+      # Hugging Face (для timm — опционально, ускоряет загрузку весов)
+      HF_TOKEN: ${HF_TOKEN:-}
+      # Режим обучения
+      TRAINING_MODE: ${TRAINING_MODE:-supervised}
+      # Mean Teacher
+      MT_MODEL_NAME: ${MT_MODEL_NAME:-efficientnet_b0}
+      MT_BATCH_SIZE: ${MT_BATCH_SIZE:-16}
+      MT_EPOCHS: ${MT_EPOCHS:-20}
+      MT_LR: ${MT_LR:-0.00003}
+      MT_LAMBDA_U: ${MT_LAMBDA_U:-1.0}
+      MT_EMA_ALPHA: ${MT_EMA_ALPHA:-0.999}
+      MT_FRACTIONS: ${MT_FRACTIONS:-0.2,0.3,0.5}
+      MT_SEEDS: ${MT_SEEDS:-42,1337,2025}
+      # Объяснимость
+      RUN_EXPLAIN: ${RUN_EXPLAIN:-true}
+      EXPLAIN_CHECKPOINT: ${EXPLAIN_CHECKPOINT:-swa_model.pt}
+      EXPLAIN_SAMPLES: ${EXPLAIN_SAMPLES:-6}
+      LIME_NUM_SAMPLES: ${LIME_NUM_SAMPLES:-300}
+      LIME_NUM_FEATURES: ${LIME_NUM_FEATURES:-12}
+      SHAP_BACKGROUND: ${SHAP_BACKGROUND:-8}
+    volumes:
+      - type: bind
+        source: ${DATASET_PATH:-../Dental OPG XRAY Dataset/Dental OPG (Classification)}
+        target: /data/dataset
+        read_only: true
+      - type: bind
+        source: ${OUTPUT_PATH:-./training/output}
+        target: /data/output
