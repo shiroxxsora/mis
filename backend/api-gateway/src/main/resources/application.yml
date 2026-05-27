@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: api-gateway
+
+  codec:
+    max-in-memory-size: 20MB
+
+  cloud:
+    gateway:
+      routes:
+        - id: service-logic
+          uri: ${SERVICE_LOGIC_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/**
+        - id: hasura-graphql
+          uri: ${HASURA_URL:http://localhost:8080}
+          predicates:
+            - Path=/graphql,/graphql/**
+          filters:
+            - RewritePath=/graphql/?, /v1/graphql
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:3000,http://localhost:5173}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600
+
+server:
+  port: ${SERVER_PORT:8084}
+
+mis:
+  security:
+    jwt:
+      issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/mis}
+      jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8180/realms/mis/protocol/openid-connect/certs}
+      allowed-client-id: ${KEYCLOAK_CLIENT_ID:mis-frontend}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
